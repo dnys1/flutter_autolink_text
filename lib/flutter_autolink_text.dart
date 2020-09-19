@@ -6,26 +6,29 @@ import 'package:flutter/gestures.dart';
 typedef VoidArgumentedCallback = void Function(String);
 
 RegExp _phoneRegExp = RegExp(r"[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*");
-RegExp _emailRegExp = RegExp(r"[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*");
-RegExp _linksRegExp = RegExp(r"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})");
+RegExp _emailRegExp = RegExp(
+    r"[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*");
+RegExp _linksRegExp = RegExp(
+    r"(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})");
 
 class AutolinkText extends StatelessWidget {
-
   final String text;
   final VoidArgumentedCallback onWebLinkTap, onPhoneTap, onEmailTap;
   final TextStyle textStyle, linkStyle;
+  final TextAlign textAlign;
   bool humanize = false;
 
-  AutolinkText({
-    Key key,
-    @required this.text,
-    @required this.textStyle,
-    @required this.linkStyle,
-    this.onWebLinkTap,
-    this.onEmailTap,
-    this.onPhoneTap,
-    this.humanize
-  }) : super(key: key);
+  AutolinkText(
+      {Key key,
+      @required this.text,
+      @required this.textStyle,
+      @required this.linkStyle,
+      this.textAlign = TextAlign.start,
+      this.onWebLinkTap,
+      this.onEmailTap,
+      this.onPhoneTap,
+      this.humanize})
+      : super(key: key);
 
   _onLinkTap(String link, _MatchType type) {
     switch (type) {
@@ -53,28 +56,27 @@ class AutolinkText extends StatelessWidget {
 
   List<TextSpan> _buildTextSpans() {
     return _findMatches(text, _getTypes(), humanize).map((match) {
-      if (match.type == _MatchType.none) return TextSpan(text: match.text, style: textStyle);
+      if (match.type == _MatchType.none)
+        return TextSpan(text: match.text, style: textStyle);
       final recognizer = TapGestureRecognizer();
       recognizer.onTap = () => _onLinkTap(match.text, match.type);
-      return TextSpan(text: match.text, style: linkStyle, recognizer: recognizer);
+      return TextSpan(
+          text: match.text, style: linkStyle, recognizer: recognizer);
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return RichText(
-      text: TextSpan(
-          children: _buildTextSpans()
-      ),
+      text: TextSpan(children: _buildTextSpans()),
+      textAlign: textAlign,
     );
   }
-
 }
 
-enum _MatchType {phone, email, link, none}
+enum _MatchType { phone, email, link, none }
 
 class _MatchedString {
-
   final _MatchType type;
   final String text;
 
@@ -84,11 +86,9 @@ class _MatchedString {
   String toString() {
     return text;
   }
-
 }
 
 List<_MatchedString> _findMatches(String text, String types, bool humanize) {
-
   List<_MatchedString> matched = [
     _MatchedString(type: _MatchType.none, text: text)
   ];
@@ -97,8 +97,10 @@ List<_MatchedString> _findMatches(String text, String types, bool humanize) {
     List<_MatchedString> newMatched = [];
     for (_MatchedString matchedBefore in matched) {
       if (matchedBefore.type == _MatchType.none) {
-        newMatched.addAll(_findLinksByType(matchedBefore.text, _MatchType.phone));
-      } else newMatched.add(matchedBefore);
+        newMatched
+            .addAll(_findLinksByType(matchedBefore.text, _MatchType.phone));
+      } else
+        newMatched.add(matchedBefore);
     }
     matched = newMatched;
   }
@@ -107,8 +109,10 @@ List<_MatchedString> _findMatches(String text, String types, bool humanize) {
     List<_MatchedString> newMatched = [];
     for (_MatchedString matchedBefore in matched) {
       if (matchedBefore.type == _MatchType.none) {
-        newMatched.addAll(_findLinksByType(matchedBefore.text, _MatchType.email));
-      } else newMatched.add(matchedBefore);
+        newMatched
+            .addAll(_findLinksByType(matchedBefore.text, _MatchType.email));
+      } else
+        newMatched.add(matchedBefore);
     }
     matched = newMatched;
   }
@@ -117,19 +121,23 @@ List<_MatchedString> _findMatches(String text, String types, bool humanize) {
     List<_MatchedString> newMatched = [];
     for (_MatchedString matchedBefore in matched) {
       if (matchedBefore.type == _MatchType.none) {
-        final webMatches = _findLinksByType(matchedBefore.text, _MatchType.link);
+        final webMatches =
+            _findLinksByType(matchedBefore.text, _MatchType.link);
         for (_MatchedString webMatch in webMatches) {
-          if (webMatch.type == _MatchType.link
-              && (webMatch.text.startsWith('http://') || webMatch.text.startsWith('https://'))
-              && humanize) {
+          if (webMatch.type == _MatchType.link &&
+              (webMatch.text.startsWith('http://') ||
+                  webMatch.text.startsWith('https://')) &&
+              humanize) {
             newMatched.add(_MatchedString(
-                text: webMatch.text.substring(webMatch.text.startsWith('http://') ? 7 : 8),
+                text: webMatch.text
+                    .substring(webMatch.text.startsWith('http://') ? 7 : 8),
                 type: _MatchType.link));
           } else {
             newMatched.add(webMatch);
           }
         }
-      } else newMatched.add(matchedBefore);
+      } else
+        newMatched.add(matchedBefore);
     }
     matched = newMatched;
   }
@@ -156,12 +164,16 @@ List<_MatchedString> _findLinksByType(String text, _MatchType type) {
   int endOfMatch = 0;
   for (Match match in matches) {
     final before = text.substring(endOfMatch, match.start);
-    if (before.isNotEmpty) output.add(_MatchedString(text: before, type: _MatchType.none));
-    final lastCharacterIndex = text[match.end - 1] == ' ' ? match.end - 1 : match.end;
-    output.add(_MatchedString(type: type, text: text.substring(match.start, lastCharacterIndex)));
+    if (before.isNotEmpty)
+      output.add(_MatchedString(text: before, type: _MatchType.none));
+    final lastCharacterIndex =
+        text[match.end - 1] == ' ' ? match.end - 1 : match.end;
+    output.add(_MatchedString(
+        type: type, text: text.substring(match.start, lastCharacterIndex)));
     endOfMatch = lastCharacterIndex;
   }
   final endOfText = text.substring(endOfMatch);
-  if (endOfText.isNotEmpty) output.add(_MatchedString(text: endOfText, type: _MatchType.none));
+  if (endOfText.isNotEmpty)
+    output.add(_MatchedString(text: endOfText, type: _MatchType.none));
   return output;
 }
