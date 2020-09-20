@@ -16,19 +16,19 @@ class AutolinkText extends StatelessWidget {
   final VoidArgumentedCallback onWebLinkTap, onPhoneTap, onEmailTap;
   final TextStyle textStyle, linkStyle;
   final TextAlign textAlign;
-  bool humanize = false;
+  final bool humanize;
 
-  AutolinkText(
-      {Key key,
-      @required this.text,
-      @required this.textStyle,
-      @required this.linkStyle,
-      this.textAlign = TextAlign.start,
-      this.onWebLinkTap,
-      this.onEmailTap,
-      this.onPhoneTap,
-      this.humanize})
-      : super(key: key);
+  AutolinkText({
+    Key key,
+    @required this.text,
+    this.textStyle,
+    this.linkStyle,
+    this.textAlign = TextAlign.start,
+    this.onWebLinkTap,
+    this.onEmailTap,
+    this.onPhoneTap,
+    this.humanize = false,
+  }) : super(key: key);
 
   _onLinkTap(String link, _MatchType type) {
     switch (type) {
@@ -54,21 +54,41 @@ class AutolinkText extends StatelessWidget {
     return types;
   }
 
-  List<TextSpan> _buildTextSpans() {
+  List<TextSpan> _buildTextSpans(BuildContext context) {
     return _findMatches(text, _getTypes(), humanize).map((match) {
       if (match.type == _MatchType.none)
-        return TextSpan(text: match.text, style: textStyle);
+        return TextSpan(text: match.text, style: effectiveTextStyle(context));
       final recognizer = TapGestureRecognizer();
       recognizer.onTap = () => _onLinkTap(match.text, match.type);
       return TextSpan(
-          text: match.text, style: linkStyle, recognizer: recognizer);
+          text: match.text,
+          style: effectiveLinkStyle(context),
+          recognizer: recognizer);
     }).toList();
+  }
+
+  TextStyle effectiveTextStyle(BuildContext context) {
+    var effectiveTextStyle = textStyle ?? DefaultTextStyle.of(context).style;
+    if (MediaQuery.of(context).boldText) {
+      effectiveTextStyle = effectiveTextStyle
+          .merge(const TextStyle(fontWeight: FontWeight.bold));
+    }
+    return effectiveTextStyle;
+  }
+
+  TextStyle effectiveLinkStyle(BuildContext context) {
+    var effectiveTextStyle = linkStyle ?? DefaultTextStyle.of(context).style;
+    if (MediaQuery.of(context).boldText) {
+      effectiveTextStyle = effectiveTextStyle
+          .merge(const TextStyle(fontWeight: FontWeight.bold));
+    }
+    return effectiveTextStyle;
   }
 
   @override
   Widget build(BuildContext context) {
     return RichText(
-      text: TextSpan(children: _buildTextSpans()),
+      text: TextSpan(children: _buildTextSpans(context)),
       textAlign: textAlign,
     );
   }
