@@ -77,12 +77,12 @@ class AutolinkText extends StatelessWidget {
   }
 
   TextStyle effectiveLinkStyle(BuildContext context) {
-    var effectiveTextStyle = linkStyle ?? DefaultTextStyle.of(context).style;
+    var effectiveLinkStyle = linkStyle ?? DefaultTextStyle.of(context).style;
     if (MediaQuery.of(context).boldText) {
-      effectiveTextStyle = effectiveTextStyle
+      effectiveLinkStyle = effectiveLinkStyle
           .merge(const TextStyle(fontWeight: FontWeight.bold));
     }
-    return effectiveTextStyle;
+    return effectiveLinkStyle;
   }
 
   @override
